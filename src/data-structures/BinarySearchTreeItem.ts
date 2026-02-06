@@ -1,6 +1,5 @@
 import { ItemComparator, type TItemDefaultValue } from '@/data-structures/Item'
 import { BinaryTreeItem } from '@/data-structures/BinaryTreeItem'
-import { useBinarySearchTree } from '@/data-structures/BinarySearchTree'
 
 export default class BinarySearchTreeItem<TValue = unknown> extends BinaryTreeItem<TValue> {
 
