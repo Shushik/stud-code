@@ -1,7 +1,8 @@
 {
+  "exclude": [ "node_modules" ],
   "ts-node": {
     "files": true,
-    "compilerOptions": {}
+    "compilerOptions": { }
   },
   "compilerOptions": {
     "strict": true,
@@ -9,17 +10,16 @@
     "noImplicitAny": false,
     "removeComments": true,
     "esModuleInterop": true,
-    "isolatedModules": true,
     "resolveJsonModule": true,
     "allowSyntheticDefaultImports": true,
     "forceConsistentCasingInFileNames": true,
     "target": "ESNext",
     "module": "NodeNext",
     "outDir": "./dist",
-    "rootDir": "./src/",
-    "baseUrl": "./src/",
+    "rootDir": "./",
+    "baseUrl": "./",
     "paths": {
-      "@/*": [ "./*" ]
+      "@/*": [ "./src/*" ]
     },
     "rootDirs": [
       "./src/"

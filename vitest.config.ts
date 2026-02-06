@@ -11,8 +11,6 @@ import path from 'path'
 
 export default defineConfig({
 
-  rootDir: './src/',
-
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src')
