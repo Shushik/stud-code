@@ -1,5 +1,5 @@
 import { type TrieItem, TrieHeadCharacter, useTrieItem } from '@/data-structures/TrieItem'
-import type {THashParser} from "@/data-structures/HashTable";
+import type { THashParser } from '@/data-structures/HashTable'
 
 export default class Trie {
 

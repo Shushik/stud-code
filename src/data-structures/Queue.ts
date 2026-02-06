@@ -1,7 +1,7 @@
 import type {
   TItemDefaultValue,
-  TItemDefaultStringifier,
-  TItemDefaultComparator
+  TItemDefaultComparator,
+  TItemDefaultStringifier
 } from '@/data-structures/Item'
 import { type LinkedList, useLinkedList } from '@/data-structures/LinkedList'
 import type { LinkedListItem } from '@/data-structures/LinkedListItem'

@@ -7,8 +7,10 @@ import {
   type ItemComparator,
   useItemComparator
 } from '@/data-structures/Item'
-import { DoublyLinkedListItem, useDoublyLinkedListItem } from '@/data-structures/DoublyLinkedListItem'
-import LinkedList from "@/data-structures/LinkedList";
+import {
+  DoublyLinkedListItem,
+  useDoublyLinkedListItem
+} from '@/data-structures/DoublyLinkedListItem'
 
 const FAIL_INDEX = -1
 const HEAD_INDEX = 0
