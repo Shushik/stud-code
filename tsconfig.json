@@ -1,0 +1,32 @@
+{
+  "ts-node": {
+    "files": true,
+    "compilerOptions": {}
+  },
+  "compilerOptions": {
+    "strict": true,
+    "skipLibCheck": true,
+    "noImplicitAny": false,
+    "removeComments": true,
+    "esModuleInterop": true,
+    "isolatedModules": true,
+    "resolveJsonModule": true,
+    "allowSyntheticDefaultImports": true,
+    "forceConsistentCasingInFileNames": true,
+    "target": "ESNext",
+    "module": "NodeNext",
+    "outDir": "./dist",
+    "rootDir": "./src/",
+    "baseUrl": "./src/",
+    "paths": {
+      "@/*": [ "./*" ]
+    },
+    "rootDirs": [
+      "./src/"
+    ],
+    "typeRoots": [
+      "./src/types",
+      "./node_modules/@types"
+    ]
+  }
+}
