@@ -5,6 +5,8 @@
   "description": "Studying algorithms, data structures and patterns",
   "license": "MIT",
   "keywords": [
+    "js",
+    "ts",
     "javascript",
     "typescript",
     "algorythms",
@@ -22,8 +24,8 @@
   },
   "main": "index.js",
   "scripts": {
-    "test": "NODE_ENV=dev jest",
-    "test:watch": "NODE_ENV=dev jest --watch",
+    "test": "NODE_ENV=dev vitest run",
+    "test:watch": "NODE_ENV=dev vitest ",
     "test:coverage": "NODE_ENV=dev jest --coverage"
   },
   "engines": {
@@ -38,8 +40,10 @@
     "@types/node": "^25.2.1",
     "jest": "^30.2.0",
     "jest-config": "^30.2.0",
+    "jsdom": "^28.0.0",
     "ts-jest": "^29.4.6",
     "ts-node": "^10.9.2",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.18"
   }
 }
