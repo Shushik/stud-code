@@ -1,0 +1,45 @@
+{
+  "name": "stud-code",
+  "author": "Shushik",
+  "version": "1.0.0",
+  "description": "Studying algorithms, data structures and patterns",
+  "license": "MIT",
+  "keywords": [
+    "javascript",
+    "typescript",
+    "algorythms",
+    "patterns",
+    "data-structures",
+    "studyin"
+  ],
+  "homepage": "https://github.com/Shushik/stud-code#readme",
+  "bugs": {
+    "url": "https://github.com/Shushik/stud-code/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Shushik/stud-code.git"
+  },
+  "main": "index.js",
+  "scripts": {
+    "test": "NODE_ENV=dev jest",
+    "test:watch": "NODE_ENV=dev jest --watch",
+    "test:coverage": "NODE_ENV=dev jest --coverage"
+  },
+  "engines": {
+    "npm": ">= 11.6.2",
+    "node": ">= 24.12.0"
+  },
+  "dependencies": {
+    "dotenv": "^17.2.4"
+  },
+  "devDependencies": {
+    "@types/jest": "^30.0.0",
+    "@types/node": "^25.2.1",
+    "jest": "^30.2.0",
+    "jest-config": "^30.2.0",
+    "ts-jest": "^29.4.6",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3"
+  }
+}
