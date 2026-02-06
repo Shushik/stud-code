@@ -234,7 +234,7 @@ export default class BinaryTreeItem<TValue = TItemDefaultValue> extends Item<TVa
   ): BinaryTreeItem<TValue> | null {
     // Common logic for deleting left or right child
     if (!this._compare) {
-      BinaryTreeItem.throwNoComparator()
+      this.constructor.throwNoComparator()
 
       return null
     }
@@ -277,7 +277,7 @@ export default class BinaryTreeItem<TValue = TItemDefaultValue> extends Item<TVa
   ): BinaryTreeItem<TValue> | null {
     // Common logic for replacing left or right child
     if (!this._compare) {
-      BinaryTreeItem.throwNoComparator()
+      this.constructor.throwNoComparator()
 
       return null
     }
@@ -300,7 +300,7 @@ export default class BinaryTreeItem<TValue = TItemDefaultValue> extends Item<TVa
     newChild: BinaryTreeItem<TValue> | null
   ): boolean {
     if (!mvChild || !newChild) {
-      BinaryTreeItem.throwNoItem('replacement')
+      this.constructor.throwNoItem('replacement')
 
       return false
     }

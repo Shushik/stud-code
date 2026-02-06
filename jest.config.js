@@ -1,5 +1,13 @@
 const { defaults } = require('jest-config')
 
+/*
+  "scripts": {
+    "test": "NODE_ENV=dev vitest run",
+    "test:watch": "NODE_ENV=dev vitest ",
+    "test:coverage": "NODE_ENV=dev jest --coverage"
+  },
+*/
+
 module.exports = async () => ({
   bail: false,
   verbose: false,
