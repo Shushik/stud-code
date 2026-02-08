@@ -1,7 +1,3 @@
 # Stud code
 
-Yet another project to study data structures, patterns and some algorithms.
-
-Some may say JS (TS) is a strange language for such purpose. But it's the main language on which I do my coder's stuff. So strange but reasonable for me.
-
-I'm not the (only) author of most code examples here.
+Collection of different coder's stuff for study or project usage. I've collected it from different places, and so I'm not the only author of some code.
