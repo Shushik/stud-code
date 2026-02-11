@@ -1,8 +1,8 @@
 {
-  "name": "stud-code",
+  "name": "useful-stuff",
   "author": "Shushik",
   "version": "1.0.0",
-  "description": "Studying algorithms, data structures and patterns",
+  "description": "Different useful stuff",
   "license": "MIT",
   "keywords": [
     "js",
@@ -14,14 +14,15 @@
     "data-structures",
     "study"
   ],
-  "homepage": "https://github.com/Shushik/stud-code#readme",
+  "homepage": "https://github.com/Shushik/useful-stuff#readme",
   "bugs": {
-    "url": "https://github.com/Shushik/stud-code/issues"
+    "url": "https://github.com/Shushik/useful-stuff/issues"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Shushik/stud-code.git"
+    "url": "git+https://github.com/Shushik/useful-stuff.git"
   },
+  "type": "module",
   "main": "index.js",
   "scripts": {
     "test": "NODE_ENV=dev vitest run",
@@ -33,9 +34,9 @@
     "node": ">= 24.12.0"
   },
   "dependencies": {
-    "dotenv": "^17.2.4"
   },
   "devDependencies": {
+    "dotenv": "^17.2.4",
     "@types/jest": "^30.0.0",
     "@types/node": "^25.2.1",
     "jest": "^30.2.0",

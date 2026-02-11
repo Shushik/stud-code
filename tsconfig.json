@@ -14,10 +14,12 @@
     "allowSyntheticDefaultImports": true,
     "forceConsistentCasingInFileNames": true,
     "target": "ESNext",
-    "module": "NodeNext",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
     "outDir": "./dist",
     "rootDir": "./",
     "baseUrl": "./",
+    "lib": [ "esnext" ],
     "paths": {
       "@/*": [ "./src/*" ]
     },
