@@ -14,10 +14,7 @@ const DEFAULT_DATA: IData = {
   c: 'c'
 }
 
-const defaultCallback = (event) => {
-  console.log(event.detail)
-  return event.detail
-}
+const defaultCallback = (event) => event.detail
 
 describe(`${Publisher.name}`, () => {
 
