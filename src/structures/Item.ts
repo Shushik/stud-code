@@ -4,13 +4,11 @@ type TItemDefaultChecker<TItem> = (item: TItem) => boolean
 type TItemDefaultComparator = (a: unknown, b: unknown) => number
 type TItemDefaultStringifier<TValue> = (val: TItemDefaultValue<TValue>) => string
 
-export default class Item<TValue = unknown> {
-
-  static name = 'Item'
+abstract class AItem<TValue = unknown> {
 
   protected _value: TItemDefaultValue<TValue>
 
-  constructor(readonly rawValue: TItemDefaultValue<TValue>) {
+  protected constructor(readonly rawValue: TItemDefaultValue<TValue>) {
     this._value = rawValue
   }
 
@@ -21,6 +19,43 @@ export default class Item<TValue = unknown> {
   // set value(rawValue: TItemDefaultValue<TValue>) {
   //   this.setValue(rawValue)
   // }
+
+
+  setValue(rawValue: TItemDefaultValue<TValue>) {
+    this._value = rawValue
+
+    return this
+  }
+
+  resetValue() {
+    this._value = undefined
+
+    return this
+  }
+
+  valueOf(): TItemDefaultValue<TValue> {
+    return this._value
+  }
+
+  toString(stringifier?: TItemDefaultStringifier<TValue>): string {
+    if (this._value === undefined || this._value === null) {
+      return ''
+    }
+
+    return typeof stringifier === 'function' ?
+      stringifier(this._value) :
+      this._value.toString()
+  }
+
+}
+
+export default class Item<TValue = unknown> extends AItem<TValue> {
+
+  static name = 'Item'
+
+  constructor(readonly rawValue: TItemDefaultValue<TValue>) {
+    super(rawValue)
+  }
 
   static throwError(rawMessage: string) {
     throw new Error(`${this.name}: ${rawMessage}`)
@@ -59,32 +94,6 @@ export default class Item<TValue = unknown> {
     toItem.setValue(rawSrcItem.value)
 
     return toItem
-  }
-
-  setValue(rawValue: TItemDefaultValue<TValue>) {
-    this._value = rawValue
-
-    return this
-  }
-
-  resetValue() {
-    this._value = undefined
-
-    return this
-  }
-
-  valueOf(): TItemDefaultValue<TValue> {
-    return this._value
-  }
-
-  toString(stringifier?: TItemDefaultStringifier<TValue>): string {
-    if (this._value === undefined || this._value === null) {
-      return ''
-    }
-
-    return typeof stringifier === 'function' ?
-      stringifier(this._value) :
-      this._value.toString()
   }
 
 }
@@ -215,6 +224,7 @@ export {
   TItemDefaultChecker,
   TItemDefaultComparator,
   TItemDefaultStringifier,
+  AItem,
   Item,
   ItemComparator,
   useItem,

@@ -1,8 +1,46 @@
-type TCallback = (...args: unknown[]) => unknown
-
-export default class Publisher {
+export default class Publisher<TData = unknown> {
 
   static name = 'Publisher'
+
+  protected _dispatcher: EventTarget
+
+  constructor() {
+    this._dispatcher = new EventTarget()
+  }
+
+  on(rawType: string, rawListener: EventListener | EventListenerObject) {
+    this._dispatcher.addEventListener(rawType, rawListener)
+  }
+
+  off(rawType: string, rawListener: EventListener | EventListenerObject) {
+    this._dispatcher.removeEventListener(rawType, rawListener)
+  }
+
+  emit(rawType: string, rawData: TData, rawOptions?: CustomEvent) {
+    const event = new CustomEvent(rawType, {
+      bubbles: true,
+      cancelable: true,
+      type: rawType,
+      target: null,
+      ...rawOptions,
+      detail: rawData
+    })
+
+    this._dispatcher.dispatchEvent(event)
+  }
+
+}
+
+function usePublisher<TData = unknown>(): Publisher {
+  return new Publisher<TData>()
+}
+
+
+type TCallback = (...args: unknown[]) => unknown
+
+class OldPublisher {
+
+  static name = 'OldPublisher'
 
   protected _events: { [id: string]: TCallback[] }
 
@@ -10,17 +48,7 @@ export default class Publisher {
     this._events = { }
   }
 
-  pub(rawEvent: string, ...args: unknown[]) {
-    if (!this._events[rawEvent]) {
-      return
-    }
-
-    this._events[rawEvent].forEach(
-      (eventHandler) => eventHandler(...args)
-    )
-  }
-
-  sub(rawEvent: string, rawCallback: TCallback) {
+  on(rawEvent: string, rawCallback: TCallback) {
     if (!this._events[rawEvent]) {
       this._events[rawEvent] = [ ] as TCallback[]
     }
@@ -28,7 +56,7 @@ export default class Publisher {
     this._events[rawEvent].push(rawCallback)
   }
 
-  unsub(rawEvent: string, rawCallback?: TCallback) {
+  off(rawEvent: string, rawCallback?: TCallback) {
     if (!this._events[rawEvent]) {
       return
     }
@@ -42,10 +70,20 @@ export default class Publisher {
     )
   }
 
+  emit(rawEvent: string, ...args: unknown[]) {
+    if (!this._events[rawEvent]) {
+      return
+    }
+
+    this._events[rawEvent].forEach(
+      (eventHandler) => eventHandler(...args)
+    )
+  }
+
 }
 
-function usePublisher(): Publisher {
-  return new Publisher()
+function useOldPublisher(): OldPublisher {
+  return new OldPublisher()
 }
 
-export { Publisher, usePublisher }
+export { Publisher, OldPublisher, usePublisher, useOldPublisher }
