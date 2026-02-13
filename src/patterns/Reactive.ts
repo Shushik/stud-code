@@ -12,6 +12,7 @@ type TListener = ((...args: unknown[]) => void) | null
 type TProxied = WeakSet<WeakKey>
 type TListeners = Set<TListener | undefined>
 type TObservers = Map<string, TListeners | undefined>
+type TPrimitives = undefined | null | boolean | number | bigint | string | symbol
 
 interface IListener<TValue = unknown> {
   target: TValue
@@ -65,8 +66,8 @@ function defineListener(observers: TObservers, observerKey: string, listener: TL
  * @param {Map} observers
  * @param {string} observerKey
  * @param {string} rootObserverKey
- * @param {*} newVal
- * @param {*} oldVal
+ * @param {undefined|null|boolean|number|bigint|string|symbol|Object} newVal
+ * @param {undefined|null|boolean|number|bigint|string|symbol|Object} oldVal
  * @param {Object} rootVal
 **/
 function triggerListeners<TValue = unknown>(
@@ -188,6 +189,17 @@ function proxifyObject<TValue = unknown>(
  */
 
 /**
+ * Reactivity for primitivity
+ *
+ * @function useRef
+ * @param {undefined|null|boolean|number|bigint|string|symbol} rawValue
+ * @returns {Object}
+ */
+function useRef<TValue extends TPrimitives>(rawValue: TValue): IRefTarget<TValue> {
+  return useReactive<TValue>(rawValue) as unknown as IRefTarget<TValue>
+}
+
+/**
  * Watchability for reactivity
  *
  * @function useWatch
@@ -208,21 +220,10 @@ function useWatch<TValue = unknown>(rawGetter: TGetter<TValue>, rawEffect: TList
 }
 
 /**
- * Reactivity for primitivity
- *
- * @function useRef
- * @param {*} rawValue
- * @returns {Object}
- */
-function useRef<TValue = unknown>(rawValue: TValue): IRefTarget<TValue> {
-  return useReactive<TValue>(rawValue) as unknown as IRefTarget<TValue>
-}
-
-/**
  * Reactivity for objectivity
  *
  * @function useReactive
- * @param {*} rawValue
+ * @param {undefined|null|boolean|number|bigint|string|symbol|Object} rawValue
  * @returns {Object}
  */
 function useReactive<TValue = unknown>(rawValue: TValue): IRootTarget<TValue> {
