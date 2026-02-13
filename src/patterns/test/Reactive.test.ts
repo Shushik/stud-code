@@ -1,24 +1,26 @@
 import { vi } from 'vitest'
-import {useReactive, useWatch} from '@/patterns/Reactive'
+import {useReactive, useRef, useWatch} from '@/patterns/Reactive'
 
 interface IValue {
   a: string,
   b: string,
   c: number | string
+  d?: number
 }
 
 const PRIMITIVE_VALUE = 1
+const OBJECT_ADD_KEY = 'd'
+const OBJECT_CHANGE_KEY = 'c'
 const OBJECT_VALUE: IValue = {
   a: 'a',
   b: 'b',
   c: 'c'
 }
-const OBJECT_CHANGE_KEY = 'c'
 
 describe('useReactive', () => {
 
   it('Should create primitive reactive variable', () => {
-    const num = useReactive<number>(PRIMITIVE_VALUE)
+    const num = useRef<number>(PRIMITIVE_VALUE)
 
     expect(num.value).toBe(PRIMITIVE_VALUE)
 
@@ -38,7 +40,7 @@ describe('useReactive', () => {
   })
 
   it('Should react on primitive change', () => {
-    const num = useReactive<number>(PRIMITIVE_VALUE)
+    const num = useRef<number>(PRIMITIVE_VALUE)
     const listener1 = vi.fn((_oldVal, _newVal) => { })
     const listener2 = vi.fn((_oldVal, _newVal) => { })
 
@@ -69,14 +71,20 @@ describe('useReactive', () => {
     useWatch(() => obj.value[OBJECT_CHANGE_KEY], listener2)
     useWatch(() => obj.value, listener3)
 
-    // Change internal object property
+    // Change existing internal object property
     obj.value[OBJECT_CHANGE_KEY] = PRIMITIVE_VALUE
+
+    // Add new internal object property
+    obj.value[OBJECT_ADD_KEY] = PRIMITIVE_VALUE
+
+    // Delete last added object property
+    delete obj.value[OBJECT_ADD_KEY]
 
     expect(listener1).toHaveBeenCalledTimes(1)
     expect(listener1).toHaveBeenCalledWith(PRIMITIVE_VALUE, OBJECT_CHANGE_KEY)
     expect(listener2).toHaveBeenCalledTimes(1)
     expect(listener2).toHaveBeenCalledWith(PRIMITIVE_VALUE, OBJECT_CHANGE_KEY)
-    expect(listener3).toHaveBeenCalledTimes(1)
+    expect(listener3).toHaveBeenCalledTimes(3)
     expect(listener3).toHaveBeenCalledWith(OBJECT_VALUE, OBJECT_VALUE)
   })
 

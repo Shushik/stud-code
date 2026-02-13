@@ -1,71 +1,120 @@
-type TEffect = ((...args: unknown[]) => void) | null
+/*
+ * Reactive functions collection
+ *
+ * Was created for deeper understanding of Proxy based
+ * reactivity pattern principles mostly
+ *
+ * @version 1.1
+ * @author Shushik <silkleopard@yandex.ru>
+**/
 type TGetter<TValue = unknown> = () => TValue
+type TListener = ((...args: unknown[]) => void) | null
+type TProxied = WeakSet<WeakKey>
+type TListeners = Set<TListener | undefined>
+type TObservers = Map<string, TListeners | undefined>
 
-interface IEffect<TValue = unknown> {
+interface IListener<TValue = unknown> {
   target: TValue
-  listener: TEffect
+  listener: TListener
+}
+
+interface IRefTarget<TValue = unknown> {
+  value: TValue
+}
+
+interface IRootTarget<TValue = unknown> {
+  value: TValue | ITarget<TValue>
+}
+
+interface ITarget<TValue = unknown> {
+  [id: string]: TValue | ITarget<TValue>
 }
 
 // Active effect common object
-let activeEffect: IEffect | null = null
+let activeEffect: IListener | null = null
 // Common observers key counter
 let observersKey: number = 0
 
-// TODO: useComputed(), useRef()
+/*
+ * Set changes listener to target object
+ *
+ * @function defineListener
+ * @param {Map} observers
+ * @param {string} observerKey
+ * @listener {Function} listener
+**/
+function defineListener(observers: TObservers, observerKey: string, listener: TListener) {
+  let listeners: TListeners | undefined = observers.get(observerKey)
 
-export function useWatch<TValue = unknown>(rawGetter: TGetter<TValue>, rawEffect: TEffect) {
-  const target = rawGetter()
-  const listener = rawEffect
+  // Create list of listeners for given key
+  if (!listeners) {
+    listeners = new Set()
 
-  // Set current target and listener object from where
-  // listener will be taken for the further subscription
-  activeEffect = { target, listener }
-  // Trigger value getter to run listener subscribe process
-  rawGetter()
-  // Reset current target and listener object
-  activeEffect = null
+    observers.set(observerKey, listeners)
+  }
+
+  // Set listener
+  listeners.add(listener)
 }
 
-function defineListeners(observers, observerKey, listener) {
-    let listeners = observers.get(observerKey)
-
-    // Create list of listeners for given key
-    if (!listeners) {
-      listeners = new Set()
-
-      observers.set(observerKey, listeners)
-    }
-
-    listeners.add(listener)
-}
-
-function triggerListeners(
-  observers,
-  observerKey,
-  rootObserverKey,
-  newVal,
-  oldVal,
-  rootVal
+/*
+ * Run all existing listeners both for the target object
+ * and the root object changes
+ *
+ * @function triggerListeners
+ * @param {Map} observers
+ * @param {string} observerKey
+ * @param {string} rootObserverKey
+ * @param {*} newVal
+ * @param {*} oldVal
+ * @param {Object} rootVal
+**/
+function triggerListeners<TValue = unknown>(
+  observers: TObservers,
+  observerKey: string,
+  rootObserverKey: string,
+  newVal: TValue,
+  oldVal: TValue,
+  rootVal: IRootTarget<TValue>
 ) {
   // Call own object listeners
   if (observers.has(observerKey)) {
-    observers.get(observerKey).forEach((listener) => listener(newVal, oldVal))
+    observers.get(observerKey)!.forEach((listener) => listener!(newVal, oldVal))
   }
 
   // If target isn't root object, call root object
   // listeners too
   if (observerKey !== rootObserverKey && observers.has(rootObserverKey)) {
-    observers.get(rootObserverKey).forEach((listener) => listener(rootVal.value, rootVal.value))
+    observers.get(rootObserverKey)!.forEach((listener) => listener!(rootVal.value, rootVal.value))
   }
 }
 
-function proxifyObject<TValue = unknown>(rootVal, target, observers, proxied, rootObserverKey) {
+/*
+ * Create proxy wrapper for given object
+ *
+ * @function proxifyObject
+ * @param {Object} rootVal
+ * @param {Object} target
+ * @param {Map} observers
+ * @param {WeakSet} proxied
+ * @param {string} rootObserverKey
+**/
+function proxifyObject<TValue = unknown>(
+  rootVal: IRootTarget<TValue>,
+  target: IRootTarget<TValue> | ITarget<TValue>,
+  observers: TObservers,
+  proxied: TProxied,
+  rootObserverKey: string
+) {
   const observerKey = `${observersKey}`
 
   observersKey += 1
 
   return new Proxy(target, {
-    get(obj, key: string, rec): TValue {
+    get(
+      obj: ITarget<TValue> | IRootTarget<TValue>,
+      key: string, rec
+    ): TValue | ITarget<TValue> | IRootTarget<TValue> {
       let val = Reflect.get(obj, key, rec)
 
       // If internal property is object, it should be proxied
@@ -86,21 +135,45 @@ function proxifyObject<TValue = unknown>(rootVal, target, observers, proxied, ro
       // If some activeEffect is set, it should be added
       // to observers list
       if (activeEffect && val === activeEffect.target) {
-        defineListeners(observers, `${observerKey}.${key as string}`, activeEffect.listener)
+        defineListener(observers, `${observerKey}.${key as string}`, activeEffect.listener)
       }
 
-      return val
+      return val as unknown as TValue
     },
-    set(obj, key, newVal, rec): boolean {
+    set(
+      obj: ITarget<TValue> | IRootTarget<TValue>,
+      key: string,
+      newVal: TValue,
+      rec
+    ): boolean {
       const oldVal = Reflect.get(obj, key, rec)
       const res = newVal !== oldVal ? Reflect.set(obj, key, newVal) : true
 
       // Try to trigger listeners from observers list
-      triggerListeners(
+      triggerListeners<TValue>(
         observers,
-        `${observerKey}.${key as string}`,
+        `${observerKey}.${key}`,
         `${rootObserverKey}.value`,
         newVal,
+        oldVal,
+        rootVal
+      )
+
+      return res
+    },
+    deleteProperty(
+      obj: ITarget<TValue> | IRootTarget<TValue>,
+      key: string
+    ): boolean {
+      const oldVal = Reflect.get(obj, key)
+      const res = Reflect.deleteProperty(obj, key)
+
+      // Try to trigger listeners from observers list
+      triggerListeners<TValue | undefined>(
+        observers,
+        `${observerKey}.${key}`,
+        `${rootObserverKey}.value`,
+        undefined,
         oldVal,
         rootVal
       )
@@ -110,7 +183,49 @@ function proxifyObject<TValue = unknown>(rootVal, target, observers, proxied, ro
   })
 }
 
-export function useReactive<TValue = unknown>(rawValue: TValue) {
+/**
+ * @todo: useComputed()
+ */
+
+/**
+ * Watchability for reactivity
+ *
+ * @function useWatch
+ * @param {Function} rawGetter
+ * @param {Function} rawEffect
+ */
+function useWatch<TValue = unknown>(rawGetter: TGetter<TValue>, rawEffect: TListener) {
+  const target = rawGetter()
+  const listener = rawEffect
+
+  // Set current target and listener object from where
+  // listener will be taken for the further subscription
+  activeEffect = { target, listener }
+  // Trigger value getter to run listener subscribe process
+  rawGetter()
+  // Reset current target and listener object
+  activeEffect = null
+}
+
+/**
+ * Reactivity for primitivity
+ *
+ * @function useRef
+ * @param {*} rawValue
+ * @returns {Object}
+ */
+function useRef<TValue = unknown>(rawValue: TValue): IRefTarget<TValue> {
+  return useReactive<TValue>(rawValue) as unknown as IRefTarget<TValue>
+}
+
+/**
+ * Reactivity for objectivity
+ *
+ * @function useReactive
+ * @param {*} rawValue
+ * @returns {Object}
+ */
+function useReactive<TValue = unknown>(rawValue: TValue): IRootTarget<TValue> {
   // proxied variable needed to check if object have been
   // proxied or not
   const proxied = new WeakSet()
@@ -119,8 +234,16 @@ export function useReactive<TValue = unknown>(rawValue: TValue) {
   // listeners functions
   const observers = new Map()
   // Root object
-  const target: { value: TValue } = { value: rawValue }
+  const target: IRootTarget<TValue> = { value: rawValue }
 
   // Let it begin
-  return proxifyObject<TValue>(target, target, observers, proxied, '')
+  return proxifyObject<TValue>(
+    target,
+    target,
+    observers,
+    proxied,
+    ''
+  ) as IRootTarget<TValue>
 }
+
+export { useRef, useWatch, useReactive }
