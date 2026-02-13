@@ -1,5 +1,5 @@
 import { vi } from 'vitest'
-import {useReactive, useRef, useWatch} from '@/patterns/Reactive'
+import {useComputed, useReactive, useRef, useWatch} from '@/patterns/Reactive'
 
 interface IValue {
   a: string,
@@ -17,7 +17,7 @@ const OBJECT_VALUE: IValue = {
   c: 'c'
 }
 
-describe('useReactive', () => {
+describe('useRef', () => {
 
   it('Should create primitive reactive variable', () => {
     const num = useRef<number>(PRIMITIVE_VALUE)
@@ -27,6 +27,28 @@ describe('useReactive', () => {
     num.value += PRIMITIVE_VALUE
 
     expect(num.value).toBe(PRIMITIVE_VALUE + PRIMITIVE_VALUE)
+  })
+
+  it('Should create computed wrap over primitive reactive variable', () => {
+    const num = useRef<number>(PRIMITIVE_VALUE)
+    const checkNum1 = 2
+    const checkNum2 = 3
+    const computedNum1 = useComputed(() => PRIMITIVE_VALUE + PRIMITIVE_VALUE)
+    const computedNum2 = useComputed<number>(() => num.value + PRIMITIVE_VALUE)
+    const listener1 = vi.fn((_newVal, _oldVal) => { })
+    const listener2 = vi.fn((_newVal, _oldVal) => { })
+
+    useWatch(() => computedNum2.value, listener1)
+    useWatch(() => computedNum2.value, listener2)
+
+    num.value += PRIMITIVE_VALUE * PRIMITIVE_VALUE
+
+    expect(computedNum1.value).toBe(checkNum1)
+    expect(computedNum2.value).toBe(checkNum2)
+    expect(listener1).toHaveBeenCalledTimes(1)
+    expect(listener1).toHaveBeenCalledWith(checkNum2, checkNum1)
+    expect(listener2).toHaveBeenCalledTimes(1)
+    expect(listener2).toHaveBeenCalledWith(checkNum2, checkNum1)
   })
 
   it('Should create object reactive variable', () => {
