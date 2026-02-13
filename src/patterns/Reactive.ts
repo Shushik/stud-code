@@ -1,4 +1,4 @@
-/*
+/**
  * Reactive functions collection
  *
  * Was created for deeper understanding of Proxy based
@@ -6,16 +6,20 @@
  *
  * @version 1.1
  * @author Shushik <silkleopard@yandex.ru>
-**/
+ */
 type TGetter<TValue = unknown> = () => TValue
-type TListener = ((...args: unknown[]) => void) | null
 type TProxied = WeakSet<WeakKey>
+type TListener = ((...args: unknown[]) => void) | null
 type TListeners = Set<TListener | undefined>
 type TObservers = Map<string, TListeners | undefined>
 type TPrimitives = undefined | null | boolean | number | bigint | string | symbol
 
 interface IListener<TValue = unknown> {
   target: TValue
+  listener: TListener
+}
+
+interface IComputed<TValue = unknown> {
   listener: TListener
 }
 
@@ -27,25 +31,58 @@ interface IRootTarget<TValue = unknown> {
   value: TValue | ITarget<TValue>
 }
 
+interface IComputedTarget<TValue = unknown> {
+  value: TValue | ITarget<TValue>
+}
+
 interface ITarget<TValue = unknown> {
   [id: string]: TValue | ITarget<TValue>
 }
 
-// Active effect common object
+/**
+ * Active effect common object
+ *
+ * @var {Object} activeEffect
+ */
 let activeEffect: IListener | null = null
-// Common observers key counter
+
+/**
+ * Active computed common object
+ *
+ * @var {Object} activeComputed
+ */
+let activeComputed: IComputed | null = null
+
+/**
+ * Common observers key counter
+ *
+ * @var {number} observersKey
+ */
 let observersKey: number = 0
 
-/*
+/**
+ * Get observer ID for listeners lists
+ *
+ * @function getObserverKey
+ * @returns {string}
+ */
+function getObserverKey(): string {
+  observersKey += 1
+
+  return `${observersKey}`
+}
+
+/**
  * Set changes listener to target object
  *
  * @function defineListener
  * @param {Map} observers
  * @param {string} observerKey
- * @listener {Function} listener
-**/
-function defineListener(observers: TObservers, observerKey: string, listener: TListener) {
+ */
+function defineListener(observers: TObservers, observerKey: string) {
   let listeners: TListeners | undefined = observers.get(observerKey)
+  const effectListener = activeEffect ? activeEffect.listener : null
+  const computedListener = activeComputed ? activeComputed.listener : null
 
   // Create list of listeners for given key
   if (!listeners) {
@@ -54,11 +91,18 @@ function defineListener(observers: TObservers, observerKey: string, listener: TL
     observers.set(observerKey, listeners)
   }
 
-  // Set listener
-  listeners.add(listener)
+  // Set computed trigger listener
+  if (computedListener) {
+    listeners.add(computedListener)
+  }
+
+  // Set effect listener
+  if (effectListener) {
+    listeners.add(effectListener)
+  }
 }
 
-/*
+/**
  * Run all existing listeners both for the target object
  * and the root object changes
  *
@@ -69,28 +113,32 @@ function defineListener(observers: TObservers, observerKey: string, listener: TL
  * @param {undefined|null|boolean|number|bigint|string|symbol|Object} newVal
  * @param {undefined|null|boolean|number|bigint|string|symbol|Object} oldVal
  * @param {Object} rootVal
-**/
+ */
 function triggerListeners<TValue = unknown>(
   observers: TObservers,
   observerKey: string,
   rootObserverKey: string,
   newVal: TValue,
   oldVal: TValue,
-  rootVal: IRootTarget<TValue>
+  rootVal?: IRootTarget<TValue>
 ) {
   // Call own object listeners
   if (observers.has(observerKey)) {
-    observers.get(observerKey)!.forEach((listener) => listener!(newVal, oldVal))
+    observers.get(observerKey)!.forEach((listener) => (
+      listener!(newVal, oldVal))
+    )
   }
 
   // If target isn't root object, call root object
   // listeners too
-  if (observerKey !== rootObserverKey && observers.has(rootObserverKey)) {
-    observers.get(rootObserverKey)!.forEach((listener) => listener!(rootVal.value, rootVal.value))
+  if (rootVal && observerKey !== rootObserverKey && observers.has(rootObserverKey)) {
+    observers.get(rootObserverKey)!.forEach((listener) => (
+      listener!(rootVal.value, rootVal.value
+    )))
   }
 }
 
-/*
+/**
  * Create proxy wrapper for given object
  *
  * @function proxifyObject
@@ -99,7 +147,7 @@ function triggerListeners<TValue = unknown>(
  * @param {Map} observers
  * @param {WeakSet} proxied
  * @param {string} rootObserverKey
-**/
+ */
 function proxifyObject<TValue = unknown>(
   rootVal: IRootTarget<TValue>,
   target: IRootTarget<TValue> | ITarget<TValue>,
@@ -107,9 +155,7 @@ function proxifyObject<TValue = unknown>(
   proxied: TProxied,
   rootObserverKey: string
 ) {
-  const observerKey = `${observersKey}`
-
-  observersKey += 1
+  const observerKey = getObserverKey()
 
   return new Proxy(target, {
     get(
@@ -135,8 +181,8 @@ function proxifyObject<TValue = unknown>(
 
       // If some activeEffect is set, it should be added
       // to observers list
-      if (activeEffect && val === activeEffect.target) {
-        defineListener(observers, `${observerKey}.${key as string}`, activeEffect.listener)
+      if (activeComputed || (activeEffect && val === activeEffect.target)) {
+        defineListener(observers, `${observerKey}.${key as string}`)
       }
 
       return val as unknown as TValue
@@ -185,10 +231,6 @@ function proxifyObject<TValue = unknown>(
 }
 
 /**
- * @todo: useComputed()
- */
-
-/**
  * Reactivity for primitivity
  *
  * @function useRef
@@ -220,6 +262,58 @@ function useWatch<TValue = unknown>(rawGetter: TGetter<TValue>, rawEffect: TList
 }
 
 /**
+ * Computing for reacting
+ *
+ * @function useComputed
+ * @param {Function} rawGetter
+ * @returns {Object}
+ */
+function useComputed<TValue = unknown>(rawGetter: TGetter<TValue>): IComputedTarget<TValue> {
+  // Observer key for computed listeners
+  const observerKey = getObserverKey()
+  // Root observers list, where keys are like
+  // '${object_id}' and values are listeners
+  // functions
+  const observers = new Map<string, TListeners>()
+  let oldValue: TValue
+  let newValue: TValue
+
+  // Make subscription for changes in all reactive variables
+  // of given expression
+  activeComputed = {
+    listener: (newVal, oldVal) => {
+      if (newVal !== oldVal) {
+        oldValue = newValue
+        newValue = rawGetter()
+
+        triggerListeners(observers, observerKey, observerKey, newValue, oldValue)
+      }
+    }
+  }
+
+  // Set default values and trigger value getter to run listener
+  // subscribe process
+  oldValue = rawGetter()
+  newValue = oldValue
+
+  // Reset subscription object
+  activeComputed = null
+
+  // Create outer computed structure
+  return {
+    get value() {
+      // If some activeEffect is set, it should be added
+      // to observers list
+      if (activeEffect) {
+        defineListener(observers, observerKey)
+      }
+
+      return newValue
+    }
+  }
+}
+
+/**
  * Reactivity for objectivity
  *
  * @function useReactive
@@ -229,11 +323,11 @@ function useWatch<TValue = unknown>(rawGetter: TGetter<TValue>, rawEffect: TList
 function useReactive<TValue = unknown>(rawValue: TValue): IRootTarget<TValue> {
   // proxied variable needed to check if object have been
   // proxied or not
-  const proxied = new WeakSet()
+  const proxied = new WeakSet<IRootTarget<TValue> | ITarget<TValue>>()
   // Root observers list, where keys are like
   // '${object_id}.${object_key}' and values are
   // listeners functions
-  const observers = new Map()
+  const observers = new Map<string, TListeners>()
   // Root object
   const target: IRootTarget<TValue> = { value: rawValue }
 
@@ -247,4 +341,4 @@ function useReactive<TValue = unknown>(rawValue: TValue): IRootTarget<TValue> {
   ) as IRootTarget<TValue>
 }
 
-export { useRef, useWatch, useReactive }
+export { useRef, useWatch, useComputed, useReactive }
