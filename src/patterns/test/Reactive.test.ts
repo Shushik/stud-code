@@ -51,6 +51,28 @@ describe('useRef', () => {
     expect(listener2).toHaveBeenCalledWith(checkNum2, checkNum1)
   })
 
+  it('Should create computed wrap over object reactive variable', () => {
+    const obj = useReactive<IValue>(Object.assign({ }, OBJECT_VALUE))
+    const checkVal1 = OBJECT_VALUE[OBJECT_CHANGE_KEY]
+    const checkVal2 = `${PRIMITIVE_VALUE}`
+    const computedObj = useComputed<string>(() => `${obj.value.c}`)
+    const listener1 = vi.fn((_newVal, _oldVal) => { })
+    const listener2 = vi.fn((_newVal, _oldVal) => { })
+
+    useWatch(() => computedObj.value, listener1)
+    useWatch(() => computedObj.value, listener2)
+
+    expect(obj.value).toEqual(OBJECT_VALUE)
+
+    obj.value[OBJECT_CHANGE_KEY] = PRIMITIVE_VALUE
+
+    expect(computedObj.value).toEqual(checkVal2)
+    expect(listener1).toHaveBeenCalledTimes(1)
+    expect(listener1).toHaveBeenCalledWith(checkVal2, checkVal1)
+    expect(listener2).toHaveBeenCalledTimes(1)
+    expect(listener2).toHaveBeenCalledWith(checkVal2, checkVal1)
+  })
+
   it('Should create object reactive variable', () => {
     const obj = useReactive<IValue>(Object.assign({ }, OBJECT_VALUE))
 
