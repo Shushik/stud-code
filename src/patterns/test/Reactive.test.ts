@@ -55,9 +55,9 @@ describe('useReactive', () => {
 
   it('Should react on object change', () => {
     const obj = useReactive<IValue>(OBJECT_VALUE)
-    const listener1 = vi.fn((_newVal, _oldVal) => { console.log('watched', _newVal, _oldVal) })
-    const listener2 = vi.fn((_newVal, _oldVal) => { console.log('watched2', _newVal, _oldVal) })
-    const listener3 = vi.fn((_newVal, _oldVal) => { console.log('watched3', _newVal, _oldVal) })
+    const listener1 = vi.fn((_newVal, _oldVal) => { })
+    const listener2 = vi.fn((_newVal, _oldVal) => { })
+    const listener3 = vi.fn((_newVal, _oldVal) => { })
 
     expect(obj.value).toEqual(OBJECT_VALUE)
     expect(obj.value).toEqual(OBJECT_VALUE)
