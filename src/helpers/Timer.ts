@@ -3,20 +3,39 @@ type TTimerCallback = (...args: unknown[]) => unknown
 type TDebouncerResult = (...args: unknown[]) => TTimerId
 type TThrottlerResult = (...args: unknown[]) => unknown
 
-function setTimer(callback: TTimerCallback, timeout: number = 0): TTimerId {
+/**
+ * Sets timeout and returns TimerId (number or null). If the second
+ * argument isn't specified, runs setImmediate call and returns
+ * null (because handler runs immediate, and it's hardly possible
+ * to stop it)
+ *
+ * @function setTimer
+ * @param callback
+ * @param {number?} timeoutMS
+ * @returns {number|null} TimerId
+ */
+function setTimer(callback: TTimerCallback, timeoutMS: number = 0): TTimerId {
   if (typeof callback !== 'function') {
     throw new Error('setTimer: No callback')
   }
 
-  if (timeout === 0) {
+  if (timeoutMS === 0) {
     setImmediate(callback)
 
     return null
   }
 
-  return setTimeout(callback, timeout)
+  return setTimeout(callback, timeoutMS)
 }
 
+/**
+ * Clears existing timer and returns null as new TimerId
+ * (which fixes clearTimeout behavior, which returns nothing)
+ *
+ * @function clearTimer
+ * @param {number|null} timerId
+ * @returns {null} TimerId
+ */
 function clearTimer(timerId: TTimerId): null {
   if (timerId) {
     clearTimeout(timerId)
@@ -25,15 +44,34 @@ function clearTimer(timerId: TTimerId): null {
   return null
 }
 
-function resetTimer(timerId: TTimerId, callback: TTimerCallback, timeout: number = 0): TTimerId {
+/**
+ * Resets existing timer with a new handler
+ *
+ * @function resetTimer
+ * @param {number|null} timerId
+ * @param {Function} callback
+ * @param {number?} timeoutMS
+ * @returns {number|null} TimerId
+ */
+function resetTimer(timerId: TTimerId, callback: TTimerCallback, timeoutMS: number = 0): TTimerId {
   clearTimer(timerId)
 
-  return setTimer(callback, timeout)
+  return setTimer(callback, timeoutMS)
 }
 
+/**
+ * Runs given handler in a loop for a given number of times,
+ * or infinitely if the third argument isn't specified
+ *
+ * @function useLooper
+ * @param {Function} callback
+ * @param {number?} timeoutMS
+ * @param {number?} repeats
+ * @returns {number|null} TimerId
+ */
 function useLooper(
   callback: TTimerCallback,
-  timeout: number = 0,
+  timeoutMS: number = 0,
   repeats: number = Infinity
 ): TTimerId {
   let counter = repeats
@@ -45,12 +83,21 @@ function useLooper(
     if (!counter) {
       clearTimer(timerId)
     }
-  }, timeout)
+  }, timeoutMS)
 
   return timerId
 }
 
-function useDebouncer(callback: TTimerCallback, timeout: number = 0): TDebouncerResult {
+/**
+ * To debounce means that given function will run in a given
+ * time after it has been last called
+ *
+ * @function useDebouncer
+ * @param {Function} callback
+ * @param {number?} timeoutMS
+ * @returns {Function}
+ */
+function useDebouncer(callback: TTimerCallback, timeoutMS: number = 0): TDebouncerResult {
   if (typeof callback !== 'function') {
     throw new Error('useDebouncer: No callback')
   }
@@ -58,13 +105,22 @@ function useDebouncer(callback: TTimerCallback, timeout: number = 0): TDebouncer
   let timerId: TTimerId
 
   return (...args: unknown[]) => {
-    timerId = resetTimer(timerId, () => callback(...args), timeout)
+    timerId = resetTimer(timerId, () => callback(...args), timeoutMS)
 
     return timerId
   }
 }
 
-function useThrottler(callback: TTimerCallback, timeout: number = 0): TThrottlerResult {
+/**
+ * To throttle means that given function will run no more often
+ * than once in a given time even if it will be called oftener
+ *
+ * @function useThrottler
+ * @param {Function} callback
+ * @param {number?} timeoutMS
+ * @returns {Function}
+ */
+function useThrottler(callback: TTimerCallback, timeoutMS: number = 0): TThrottlerResult {
   if (typeof callback !== 'function') {
     throw new Error('useThrottler: No callback')
   }
@@ -77,7 +133,7 @@ function useThrottler(callback: TTimerCallback, timeout: number = 0): TThrottler
 
       isItNow = false
 
-      setTimer(() => (isItNow = true), timeout)
+      setTimer(() => (isItNow = true), timeoutMS)
     }
   }
 }
