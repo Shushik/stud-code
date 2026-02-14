@@ -83,6 +83,7 @@ function useThrottler(callback: TTimerCallback, timeout: number = 0): TThrottler
 }
 
 export {
+  TTimerId,
   setTimer,
   clearTimer,
   resetTimer,
