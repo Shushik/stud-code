@@ -13,7 +13,7 @@ type TItemDefaultStringifier<TValue> = (val: TItemDefaultValue<TValue>) => strin
 abstract class AItem<TValue = unknown> {
 
   /**
-   * Value of unknown type
+   * Internal value prop of unknown type
    *
    * @protected
    * @property {*} _value
@@ -32,7 +32,7 @@ abstract class AItem<TValue = unknown> {
   }
 
   /**
-   * Public value property
+   * External value property
    *
    * @readonly
    * @property {*} value
