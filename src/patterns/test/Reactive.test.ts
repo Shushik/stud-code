@@ -123,12 +123,19 @@ describe('useRef', () => {
 
     // Delete last added object property
     delete obj.value[OBJECT_ADD_KEY]
+    // Delete pre-last object property with watcher
+    // @ts-ignore
+    delete obj.value[OBJECT_CHANGE_KEY]
 
-    expect(listener1).toHaveBeenCalledTimes(1)
+    // Return back pre-last object property without watcher
+    // which should not affect call removed watcher
+    obj.value[OBJECT_CHANGE_KEY] = PRIMITIVE_VALUE
+
+    expect(listener1).toHaveBeenCalledTimes(2)
     expect(listener1).toHaveBeenCalledWith(PRIMITIVE_VALUE, OBJECT_CHANGE_KEY)
-    expect(listener2).toHaveBeenCalledTimes(1)
+    expect(listener2).toHaveBeenCalledTimes(2)
     expect(listener2).toHaveBeenCalledWith(PRIMITIVE_VALUE, OBJECT_CHANGE_KEY)
-    expect(listener3).toHaveBeenCalledTimes(3)
+    expect(listener3).toHaveBeenCalledTimes(5)
     expect(listener3).toHaveBeenCalledWith(OBJECT_VALUE, OBJECT_VALUE)
   })
 

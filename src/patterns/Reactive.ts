@@ -103,6 +103,19 @@ function defineListener(observers: TObservers, observerKey: string) {
 }
 
 /**
+ * Remove all existing listeners for the target object
+ *
+ * @function deleteListeners
+ * @param {Map} observers
+ * @param {string} observerKey
+ */
+function deleteListeners(observers: TObservers, observerKey: string) {
+  if (observers.has(observerKey)) {
+    observers.delete(observerKey)
+  }
+}
+
+/**
  * Run all existing listeners both for the target object
  * and the root object changes
  *
@@ -224,6 +237,9 @@ function proxifyObject<TValue = unknown>(
         oldVal,
         rootVal
       )
+
+      // Delete all listeners
+      deleteListeners(observers, `${observerKey}.${key}`)
 
       return res
     }
