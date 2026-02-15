@@ -1,3 +1,11 @@
+import {
+  ItemIsLess,
+  ItemIsEqual,
+  ItemIsGreater,
+  ItemComparator,
+  TItemDefaultComparator
+} from "@/structures/Item";
+
 interface ICalendarMonthOffsetsRes {
   lastDay: number
   firstDay: number
@@ -240,7 +248,63 @@ function getCorrectedWeekday(rawDate: Date): number {
   return weekDay === 0 ? 7 : weekDay
 }
 
+/**
+ * Default comparator can work with values and with
+ * Item-like objects, comparing their .value props
+ *
+ * @function useDefaultItemComparator
+ * @param {Date} dateA
+ * @param {Date} dateB
+ * @returns {number} -1 | 0 | 1
+ */
+const useDefaultDateComparator: TItemDefaultComparator = function(
+  dateA: unknown,
+  dateB: unknown
+): number {
+  const msA = (dateA as Date).getMilliseconds()
+  const msB = (dateB as Date).getMilliseconds()
+
+  if (dateA === dateB) {
+    return ItemIsEqual
+  }
+
+  return msA < msB ? ItemIsLess : ItemIsGreater
+}
+
+class DateComparator extends ItemComparator {
+
+  /**
+   * Class name
+   *
+   * @static
+   * @property {string} name
+   */
+  static name = 'DateComparator'
+
+  /**
+   * @constructor
+   * @param {Function?} externalComparator
+   */
+  constructor(readonly externalComparator?: TItemDefaultComparator) {
+    super(externalComparator ? externalComparator : useDefaultDateComparator)
+  }
+
+}
+
+/**
+ * Function wrapper returns DateComparator instance
+ *
+ * @function useDateComparator
+ * @param {Function?} externalComparator
+ * @returns {DateComparator}
+ */
+function useDateComparator(externalComparator?: TItemDefaultComparator): DateComparator {
+  return new DateComparator(externalComparator)
+}
+
 export {
+  DateComparator,
+  useDateComparator,
   getDaysInYear,
   getDaysInMonth,
   formatTimeunit,

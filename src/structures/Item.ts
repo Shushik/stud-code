@@ -243,7 +243,7 @@ const IS_GREATER = 1
 const useDefaultItemComparator: TItemDefaultComparator = function(
   rawA: unknown,
   rawB: unknown
-) {
+): number {
   if (!rawA && !rawB) {
     return IS_EQUAL
   } else if (rawB && !rawA) {
@@ -300,6 +300,10 @@ class ItemComparator {
    */
   compare: TItemDefaultComparator
 
+  /**
+   * @constructor
+   * @param {Function?} externalComparator
+   */
   constructor(readonly externalComparator?: TItemDefaultComparator) {
     this._isReversed = false
 
@@ -452,6 +456,9 @@ export {
   TItemDefaultChecker,
   TItemDefaultComparator,
   TItemDefaultStringifier,
+  IS_LESS as ItemIsLess,
+  IS_EQUAL as ItemIsEqual,
+  IS_GREATER as ItemIsGreater,
   AItem,
   Item,
   ItemComparator,

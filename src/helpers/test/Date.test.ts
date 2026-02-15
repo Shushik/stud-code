@@ -10,6 +10,7 @@ import {
   checkIsDateValid,
   fillHolidaysCache,
   clearHolidaysCache,
+  getCorrectedWeekday
 } from '@/helpers/Date'
 
 describe('PHPDate and date helpers', () => {
@@ -52,6 +53,16 @@ describe('PHPDate and date helpers', () => {
 
     expect(feb28).toBe(28)
     expect(feb29).toBe(29)
+  })
+
+  it('Get corrected week day number', () => {
+    const wednesday = new Date(1983, 1, 16, 10, 0, 0)
+    const saturday = new Date(1983, 1, 19, 10, 0, 0)
+    const sunday = new Date(1983, 1, 20, 10, 0, 0)
+
+    expect(getCorrectedWeekday(wednesday)).toBe(3)
+    expect(getCorrectedWeekday(saturday)).toBe(6)
+    expect(getCorrectedWeekday(sunday)).toBe(7)
   })
 
   it('Should correctly format date', () => {
