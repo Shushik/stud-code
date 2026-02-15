@@ -5,7 +5,7 @@ describe('File size formatter', () => {
   it('Should return correct file size in KiB', () => {
     const bytes = 8077979053
     const checkSize = 8.08
-    const checkUnit = 'gib'
+    const checkUnit = 'gb'
     const res = formatFileSize(bytes, false, 2)
 
     expect(res.bytes).toBe(bytes)
@@ -16,7 +16,7 @@ describe('File size formatter', () => {
   it('Should return correct file size in KB', () => {
     const bytes = 6435270646
     const checkSize = 6
-    const checkUnit = 'gb'
+    const checkUnit = 'gib'
     const res = formatFileSize(bytes, true, 2)
 
     expect(res.bytes).toBe(bytes)
