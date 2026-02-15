@@ -1,9 +1,12 @@
+import { phpDate } from '@/helpers/PHPDate'
 import {
-  phpDate,
   getDaysInYear,
+  getDaysInMonth,
   formatTimeunit,
-  checkIsYearLeap
-} from '@/helpers/PHPDate'
+  checkIsWeekend,
+  checkIsYearLeap,
+  checkIsDateValid
+} from '@/helpers/Date'
 
 describe('PHPDate and date helpers', () => {
 
@@ -21,6 +24,30 @@ describe('PHPDate and date helpers', () => {
     expect(getDaysInYear(leapYear)).toBe(daysInLeapYear)
     expect(checkIsYearLeap(nonLeapYear)).toBeFalsy()
     expect(getDaysInYear(nonLeapYear)).toBe(daysInNonLeapYear)
+  })
+
+  it('Should check if given date is valid or not', () => {
+    const validDate = new Date()
+    const invalidDate = Date.parse('oh no')
+
+    expect(checkIsDateValid(validDate)).toBeTruthy()
+    expect(checkIsDateValid(invalidDate)).toBeFalsy()
+  })
+
+  it('Should check if given date is weekend or not', () => {
+    const wednesday = checkIsWeekend(new Date(1983, 1, 16))
+    const saturday = checkIsWeekend(new Date(2016, 2, 5))
+
+    expect(wednesday).toBeFalsy()
+    expect(saturday).toBeTruthy()
+  })
+
+  it('Should get correct days in month', () => {
+    const feb28 = getDaysInMonth(new Date(1983, 1, 16))
+    const feb29 = getDaysInMonth(new Date(2000, 1, 16))
+
+    expect(feb28).toBe(28)
+    expect(feb29).toBe(29)
   })
 
   it('Should correctly format date', () => {

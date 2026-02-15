@@ -1,8 +1,8 @@
+import { formatTimeunit } from '@/helpers/Date'
+
 const MS_IN_DAY = 86400000
 const MS_IN_WEEK = MS_IN_DAY * 7
 
-type TLetters = 'A' | 'D' | 'F' | 'G' | 'H' | 'L' | 'M' | 'N' | 'S' | 'U' | 'W' | 'Y' |
-  'a' | 'd' | 'g' | 'h' | 'i' | 'j' | 'l' | 'm' | 'n' | 's' | 't' | 'w' | 'y' | 'z'
 type TDatePart = (d: Date, t: TTranslator) => string | number
 type TTranslator = (key: string) => string
 
@@ -189,15 +189,18 @@ function getDateParts(): { [id: string ]: TDatePart }  {
 
 /**
  * Gets formatted date like date() function in php
- * List of available formats see in the link
+ *
+ * @see https://www.php.net/manual/en/function.date.php
+ *
+ * List of available letters:
+ * A, D, F, G, H, L, M, N, S, U, W, Y,
+ * a, d, g, h, i, j, l, m, n, s, t, w, y, z
  *
  * If the second argument hasn't specified, uses current date/time
  *
  * The third param specifies translation functions (like i18n.t)
  * List of known keys can be seen in getDefaultLocale() function
  * Note that usually locales are stored in JSON or object
- *
- * @see https://www.php.net/manual/en/function.date.php
  *
  * @function phpDate
  * @param {string} tmpl
@@ -232,21 +235,6 @@ export default function phpDate(tmpl: string, rawDate?: Date, rawTranslator?: TT
   return res
 }
 
-function formatTimeunit(raw: number): string {
-  return ('0' + raw).slice(-2)
-}
-
-function checkIsYearLeap(year: number): boolean {
-  return new Date(year, 1, 29).getDate() === 29
-}
-
-function getDaysInYear(year: number): number {
-  return checkIsYearLeap(year) ? 366 : 365
-}
-
 export {
-  phpDate,
-  getDaysInYear,
-  formatTimeunit,
-  checkIsYearLeap
+  phpDate
 }
