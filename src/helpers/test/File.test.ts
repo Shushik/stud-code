@@ -1,4 +1,4 @@
-import {formatFileSize} from "@/helpers/File";
+import { formatFileSize } from '@/helpers/File'
 
 describe('File size formatter', () => {
 
