@@ -9,7 +9,7 @@ export interface IFileSize {
  *
  * @function formatFileSize
  * @param {number} rawSize in bytes
- * @param {boolean?} si (true if kilobytes, false if kibibytes)
+ * @param {boolean?} si true for kilobytes, false for kibibytes
  * @param {number?} bp numbers after the decimal point
  * @return {Object}
  */
