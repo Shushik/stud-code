@@ -120,7 +120,7 @@ function getDateParts(): { [id: string ]: TDatePart }  {
     // 24-hour format of an hour without leading zeros
     G: (rd, t) => rd.getHours(),
     // 24-hour format of an hour with leading zeros
-    H: (rd, t) => helpFormatTimeunit(rd.getHours()),
+    H: (rd, t) => formatTimeunit(rd.getHours()),
     // Whether it's a leap year
     L: (rd, t) => (
       new Date(rd.getFullYear(), 1, 29).
@@ -148,7 +148,7 @@ function getDateParts(): { [id: string ]: TDatePart }  {
     // Lowercase Ante meridiem and Post meridiem
     a: (rd, t) => t(`date.ampm.${rd.getHours() >= 12 ? 'pm' : 'am'}`),
     // Day of the month, 2 digits with leading zeros
-    d: (rd, t) => helpFormatTimeunit(rd.getDate()),
+    d: (rd, t) => formatTimeunit(rd.getDate()),
     // 12-hour format of an hour without leading zeros
     g: (rd, t) => {
       const n = rd.getHours();
@@ -157,20 +157,20 @@ function getDateParts(): { [id: string ]: TDatePart }  {
     // 12-hour format of an hour with leading zeros
     h: (rd, t) => {
       const n = rd.getHours();
-      return helpFormatTimeunit(n >= 12 ? n - 12 : n)
+      return formatTimeunit(n >= 12 ? n - 12 : n)
     },
     // Minutes with leading zeros
-    i: (rd, t) => helpFormatTimeunit(rd.getMinutes()),
+    i: (rd, t) => formatTimeunit(rd.getMinutes()),
     // Day of the month without leading zeros
     j: (rd, t) => rd.getDate(),
     // Full textual representation of the day of the week
     l: (rd, t) => t(`date.days.full.${rd.getDay()}`),
     // Numeric representation of a month, with leading zeros
-    m: (rd, t) => helpFormatTimeunit(rd.getMonth() + 1),
+    m: (rd, t) => formatTimeunit(rd.getMonth() + 1),
     // Numeric representation of a month, without leading zeros
     n: (rd, t) => rd.getMonth() + 1,
     // Seconds with leading zeros
-    s: (rd, t) => helpFormatTimeunit(rd.getSeconds()),
+    s: (rd, t) => formatTimeunit(rd.getSeconds()),
     // Number of days in the given month
     t: (rd, t) => (
       new Date(rd.getFullYear(), rd.getMonth() + 1, 0).getDate()
@@ -232,21 +232,21 @@ export default function phpDate(tmpl: string, rawDate?: Date, rawTranslator?: TT
   return res
 }
 
-function helpFormatTimeunit(raw: number): string {
+function formatTimeunit(raw: number): string {
   return ('0' + raw).slice(-2)
 }
 
-function helpCheckIsYearLeap(year: number): boolean {
+function checkIsYearLeap(year: number): boolean {
   return new Date(year, 1, 29).getDate() === 29
 }
 
-function helpGetDaysInYear(year: number): number {
-  return helpCheckIsYearLeap(year) ? 366 : 365
+function getDaysInYear(year: number): number {
+  return checkIsYearLeap(year) ? 366 : 365
 }
 
 export {
   phpDate,
-  helpGetDaysInYear,
-  helpFormatTimeunit,
-  helpCheckIsYearLeap
+  getDaysInYear,
+  formatTimeunit,
+  checkIsYearLeap
 }
