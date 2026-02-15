@@ -8,6 +8,7 @@ import {
   checkIsWeekend,
   checkIsYearLeap,
   checkIsDateValid,
+  fillHolidaysCache,
   clearHolidaysCache,
 } from '@/helpers/Date'
 
@@ -74,16 +75,20 @@ describe('PHPDate and date helpers', () => {
   })
 
   it('Should check if given date is holiday or not', () => {
+    const holiday1 = '1983-01-01T10:00:00'
+    const holiday2 = 410338800000
+    const notHoliday1 = new Date(1983, 0, 3, 10, 0, 0)
+    const notHoliday2 = new Date(1983, 1, 16, 10, 0, 0)
     const firstJan = {
       isHoliday: true,
-      date: '1983-01-01T00:00:00'
+      date: holiday1
     }
     const secondJan = {
-      date: 412894800000
+      date: holiday2
     }
     const thirdJan = {
       isHoliday: false,
-      date: new Date(1983, 0, 3)
+      date: notHoliday1
     }
     const holidaysArr = vi.fn(() => [
       firstJan,
@@ -95,10 +100,12 @@ describe('PHPDate and date helpers', () => {
       secondJan,
       thirdJan
     }))
-    const holiday1 = '1983-01-01T00:00:00'
-    const holiday2 = 410302800000
-    const notHoliday1 = new Date(1983, 0, 3)
-    const notHoliday2 = new Date(1983, 1, 16)
+    const holidayDir = vi.fn(() => [
+      {
+        isHoliday: true,
+        date: notHoliday2
+      }
+    ])
 
     // Check with array and object
     expect(checkIsHoliday(holiday1, holidaysArr)).toBeTruthy()
@@ -118,6 +125,16 @@ describe('PHPDate and date helpers', () => {
     expect(checkIsHoliday(notHoliday2, holidaysObj)).toBeFalsy()
     expect(holidaysArr).toHaveBeenCalledTimes(2)
     expect(holidaysObj).toHaveBeenCalledTimes(2)
+
+    // Reset holidays directly
+    clearHolidaysCache(holidaysArr)
+    clearHolidaysCache(holidaysObj)
+
+    // You can just choose a day, you know
+    fillHolidaysCache(holidayDir)
+
+    expect(checkIsHoliday(notHoliday2, holidayDir)).toBeTruthy()
+    expect(holidayDir).toHaveBeenCalledTimes(1)
   })
 
 })

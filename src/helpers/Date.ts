@@ -5,6 +5,17 @@ interface ICalendarMonthOffsetsRes {
   daysOnScreen: number
 }
 
+interface IHolidayItem {
+  isHoliday?: boolean
+  date: number | string | Date
+}
+
+interface IHolidayItems {
+  [id: string]: IHolidayItem
+}
+
+type THolidaysGetter = () => IHolidayItem[] | IHolidayItems | null
+
 /**
  * Get Date object from milliseconds number, parsable string
  * or another Date object
@@ -23,7 +34,7 @@ function getDateFromValue(rawDate: number | string | Date): Date {
   } else if (type === 'string') {
     date = new Date(Date.parse(rawDate as string))
   } else {
-    date = new Date(rawDate as Date)
+    date = new Date(rawDate) as Date
   }
 
   if (!checkIsDateValid(date)) {
@@ -68,51 +79,100 @@ function checkIsWeekend(rawDate: Date): boolean {
   return dayNum === 0 || dayNum === 6
 }
 
-interface IHolidayItem {
-  isHoliday?: boolean
-  date: number | string | Date
+/**
+ * An object with Maps of holidays
+ *
+ * @const {WeakMap} holidaysCache
+ */
+const holidaysCache = new WeakMap<THolidaysGetter, Map<string, boolean>>()
+
+/**
+ * Fill holidays dict with holidays list
+ *
+ * @function fillHolidaysCache
+ * @param {Function} holidaysGetter the same function, which has been
+ *   given as an argument to checkIsHoliday()
+ * @returns {Map}
+ */
+function fillHolidaysCache(holidaysGetter: THolidaysGetter) {
+  const rawHolidaysList = holidaysGetter()
+  const holidaysList = new Map<string, boolean>()
+
+  for (let key in rawHolidaysList) {
+    const item = rawHolidaysList[key] as IHolidayItem
+    let date = getDateFromValue(item.date)
+
+    date.setHours(0)
+    date.setMinutes(0)
+    date.setSeconds(0)
+
+    const dateKey = date.toString()
+
+    holidaysList.set(
+      dateKey,
+      (item.isHoliday === true || item.isHoliday === undefined)
+    )
+  }
+
+  holidaysCache.set(holidaysGetter, holidaysList)
+
+  return holidaysList
 }
 
-interface IHolidayItems {
-  [id: string]: IHolidayItem
+/**
+ * Remove holidays dict from cache
+ *
+ * @function clearHolidaysCache
+ * @param {Function} holidaysGetter the same function, which has been
+ *   given as an argument to checkIsHoliday()
+ * @returns {boolean}
+ */
+function clearHolidaysCache(holidaysGetter: THolidaysGetter): boolean {
+  return holidaysCache.delete(holidaysGetter)
 }
 
-type THolidaysGetter = () => IHolidayItem[] | IHolidayItems | null
-
-const holidaysCache = new WeakMap<THolidaysGetter, Map<Date, boolean>>()
-
-function clearHolidaysCache(holidaysGetter: THolidaysGetter) {
-  holidaysCache.delete(holidaysGetter)
-}
-
+/**
+ * Check if a given date is a holiday
+ *
+ * Caches holidays dict, returning from holidaysGetter()
+ * between the calls. Cache can be removed by
+ * clearHolidaysCache() function
+ *
+ * @function checkIsHoliday
+ * @param {number|string|Date} rawDate
+ * @param {Function} holidaysGetter should return an array or an object:
+ *   @object
+ *     @property {boolean?} isHoliday true by default
+ *       If set to false, even a weekend will be marked
+ *       as a non-holiday
+ *     @property {number|string|Date} date milliseconds,
+ *       or string valid for Date.parse(), or Date instance
+ * @returns {boolean}
+ */
 function checkIsHoliday(
   rawDate: number | string | Date,
   holidaysGetter: THolidaysGetter
 ): boolean {
-  let holidaysList: Map<Date, boolean> | undefined = holidaysCache.get(holidaysGetter)
+  let holidaysList: Map<string, boolean> | undefined = holidaysCache.get(holidaysGetter)
+
+  // Fill
+  if (!holidaysList) {
+    holidaysList = fillHolidaysCache(holidaysGetter)
+  }
+
   const date = getDateFromValue(rawDate)
 
-  if (!holidaysList) {
-    // Fill cache
-    const rawHolidaysList = holidaysGetter()
+  date.setHours(0)
+  date.setMinutes(0)
+  date.setSeconds(0)
 
-    holidaysList = new Map<Date, boolean>()
-
-    for (let key in rawHolidaysList) {
-      const item = rawHolidaysList[key] as IHolidayItem
-      const date = getDateFromValue(item.date)
-
-      holidaysList.set(date, item.isHoliday === true || item.isHoliday === undefined)
-    }
-
-    holidaysCache.set(holidaysGetter, holidaysList)
-  }
+  const dateKey = date.toString()
 
   if (!holidaysList) {
     return checkIsWeekend(date)
   }
 
-  const isHoliday = holidaysList.get(date)
+  const isHoliday = holidaysList.get(dateKey)
 
   if (isHoliday === undefined) {
     return checkIsWeekend(date)
@@ -188,6 +248,7 @@ export {
   checkIsWeekend,
   checkIsYearLeap,
   checkIsDateValid,
+  fillHolidaysCache,
   clearHolidaysCache,
   getCorrectedWeekday
 }
