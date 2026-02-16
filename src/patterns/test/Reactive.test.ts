@@ -2,7 +2,6 @@ import { vi } from 'vitest'
 import {
   useRef,
   useWatch,
-  useUnwatch,
   useComputed,
   useReactive
 } from '@/patterns/Reactive'
@@ -149,16 +148,14 @@ describe('useRef', () => {
     const obj = useReactive<IValue>(OBJECT_VALUE)
     const listener1 = vi.fn((_newVal, _oldVal) => { })
     const listener2 = vi.fn(() => obj.value[OBJECT_CHANGE_KEY] + '1')
-    const watcher = useWatch(() => obj.value[OBJECT_CHANGE_KEY], listener1)
+    const stop = useWatch(() => obj.value[OBJECT_CHANGE_KEY], listener1)
 
     useComputed(listener2)
-    useUnwatch(watcher)
+    stop()
 
     obj.value[OBJECT_CHANGE_KEY] = PRIMITIVE_VALUE
     obj.value[OBJECT_CHANGE_KEY] = PRIMITIVE_VALUE + PRIMITIVE_VALUE
 
-    // One listener from useWatch should be removed,
-    // And another one from useComputed should stay
     expect(listener1).not.toHaveBeenCalled()
     expect(listener2).toHaveBeenCalledTimes(2)
   })

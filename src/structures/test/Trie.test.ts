@@ -1,11 +1,5 @@
-import { configDotenv } from 'dotenv'
 import { Trie, useTrie } from '@/structures/Trie'
 import { TrieHeadCharacter } from '@/structures/TrieItem'
-
-configDotenv({
-  quiet: true,
-  path: `.env.${process.env.NODE_ENV}`
-})
 
 const WORDS = [
   `Don't`, 'come', 'easy', 'to', 'me',

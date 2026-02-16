@@ -1,11 +1,5 @@
-import { configDotenv } from 'dotenv'
 import { DoublyLinkedList, useDoublyLinkedList } from '@/structures/DoublyLinkedList'
 import { useDoublyLinkedListItem } from '@/structures/DoublyLinkedListItem'
-
-configDotenv({
-  quiet: true,
-  path: `.env.${process.env.NODE_ENV}`
-})
 
 const FAIL_VAL = 100500
 const HEAD_VAL = 1

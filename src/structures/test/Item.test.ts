@@ -1,10 +1,4 @@
-import { configDotenv } from 'dotenv'
 import { Item, useItem } from '@/structures/Item'
-
-configDotenv({
-  quiet: true,
-  path: `.env.${process.env.NODE_ENV}`
-})
 
 const ITEM_VAL = 100500
 const STRING_VAL = '1001'

@@ -1,14 +1,8 @@
-import { configDotenv } from 'dotenv'
 import {
   HashTable,
   useHashTable,
   useHashParser
 } from '@/structures/HashTable'
-
-configDotenv({
-  quiet: true,
-  path: `.env.${process.env.NODE_ENV}`
-})
 
 const TABLE_SIZE = 64
 const KEY_ONE = 'key_123'

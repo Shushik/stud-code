@@ -1,14 +1,8 @@
-import { configDotenv } from 'dotenv'
 import {
   type TItemDefaultComparator,
   ItemComparator,
   useItemComparator
 } from '@/structures/Item'
-
-configDotenv({
-  quiet: true,
-  path: `.env.${process.env.NODE_ENV}`
-})
 
 interface IItem {
   value: number

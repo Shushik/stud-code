@@ -1,10 +1,4 @@
-import { configDotenv } from 'dotenv'
 import { LinkedListItem, useLinkedListItem } from '@/structures/LinkedListItem'
-
-configDotenv({
-  quiet: true,
-  path: `.env.${process.env.NODE_ENV}`
-})
 
 const ITEM_VAL = 100500
 const NEXT_VAL = ITEM_VAL - 500

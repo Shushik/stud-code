@@ -1,10 +1,7 @@
-import { configDotenv } from 'dotenv'
-import { DoublyLinkedListItem, useDoublyLinkedListItem } from '@/structures/DoublyLinkedListItem'
-
-configDotenv({
-  quiet: true,
-  path: `.env.${process.env.NODE_ENV}`
-})
+import {
+  DoublyLinkedListItem,
+  useDoublyLinkedListItem
+} from '@/structures/DoublyLinkedListItem'
 
 const ITEM_VAL = 100500
 const NEXT_VAL = ITEM_VAL - 500

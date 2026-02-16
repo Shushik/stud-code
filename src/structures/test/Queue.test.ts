@@ -1,11 +1,5 @@
-import { configDotenv } from 'dotenv'
 import { Queue, useQueue } from '@/structures/Queue'
 import type { TItemDefaultValue } from '@/structures/Item'
-
-configDotenv({
-  quiet: true,
-  path: `.env.${process.env.NODE_ENV}`
-})
 
 const ITEM_ONE = 1
 const ITEM_TWO = 2

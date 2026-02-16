@@ -1,11 +1,5 @@
-import { configDotenv } from 'dotenv'
 import { useItemComparator } from '@/structures/Item'
 import { BinaryTreeItem, useBinaryTreeItem } from '@/structures/BinaryTreeItem'
-
-configDotenv({
-  quiet: true,
-  path: `.env.${process.env.NODE_ENV}`
-})
 
 const HEIGHT_LEFT = 1
 const HEIGHT_STEP = 1

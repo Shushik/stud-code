@@ -1,10 +1,4 @@
-import { configDotenv } from 'dotenv'
 import { TrieItem, useTrieItem } from '@/structures/TrieItem'
-
-configDotenv({
-  quiet: true,
-  path: `.env.${process.env.NODE_ENV}`
-})
 
 const CHAR_A = 'a'
 const CHAR_B = 'b'

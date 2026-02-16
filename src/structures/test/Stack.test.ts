@@ -1,11 +1,5 @@
-import { configDotenv } from 'dotenv'
 import { Stack, useStack } from '@/structures/Stack'
 import type { TItemDefaultValue } from "@/structures/Item";
-
-configDotenv({
-  quiet: true,
-  path: `.env.${process.env.NODE_ENV}`
-})
 
 const ITEM_ONE = 1
 const ITEM_TWO = 2

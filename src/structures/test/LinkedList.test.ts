@@ -1,11 +1,5 @@
-import { configDotenv } from 'dotenv'
 import { LinkedList, useLinkedList } from '@/structures/LinkedList'
 import { useLinkedListItem } from '@/structures/LinkedListItem'
-
-configDotenv({
-  quiet: true,
-  path: `.env.${process.env.NODE_ENV}`
-})
 
 const FAIL_VAL = 100500
 const HEAD_VAL = 1
