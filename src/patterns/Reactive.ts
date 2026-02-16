@@ -108,6 +108,14 @@ function defineListener(observers: TObservers, observerKey: string) {
   }
 }
 
+/**
+ * Remove changes listener from target object
+ *
+ * @function declineListener
+ * @param {Map} observers
+ * @param {string} observerKey
+ * @param {Function} rawListener
+ */
 function declineListener(observers: TObservers, observerKey: string, rawListener: TListener) {
   const listeners = observers.get(observerKey)
 
@@ -121,11 +129,11 @@ function declineListener(observers: TObservers, observerKey: string, rawListener
 /**
  * Remove all existing listeners for the target object
  *
- * @function deleteListeners
+ * @function declineListeners
  * @param {Map} observers
  * @param {string} observerKey
  */
-function deleteListeners(observers: TObservers, observerKey: string) {
+function declineListeners(observers: TObservers, observerKey: string) {
   if (observers.has(observerKey)) {
     observers.delete(observerKey)
   }
@@ -170,14 +178,14 @@ function triggerListeners<TValue = unknown>(
 /**
  * Create proxy wrapper for given object
  *
- * @function proxifyObject
+ * @function wrapObject
  * @param {Object} rootVal
  * @param {Object} target
  * @param {Map} observers
  * @param {WeakSet} proxied
  * @param {string} rootObserverKey
  */
-function proxifyObject<TValue = unknown>(
+function wrapObject<TValue = unknown>(
   rootVal: IRootTarget<TValue>,
   target: IRootTarget<TValue> | ITarget<TValue>,
   observers: TObservers,
@@ -196,8 +204,8 @@ function proxifyObject<TValue = unknown>(
 
       // If internal property is object, it should be proxied
       if (typeof val === 'object' && val !== null && !proxied.has(target)) {
-        // Proxify object
-        val = proxifyObject<TValue>(
+        // Wrap object with Proxy
+        val = wrapObject<TValue>(
           rootVal,
           val,
           observers,
@@ -261,7 +269,7 @@ function proxifyObject<TValue = unknown>(
       )
 
       // Delete all listeners
-      deleteListeners(observers, `${observerKey}.${key}`)
+      declineListeners(observers, `${observerKey}.${key}`)
 
       return res
     }
@@ -398,7 +406,7 @@ function useReactive<TValue = unknown>(rawValue: TValue): IRootTarget<TValue> {
   const target: IRootTarget<TValue> = { value: rawValue }
 
   // Let it begin
-  return proxifyObject<TValue>(
+  return wrapObject<TValue>(
     target,
     target,
     observers,
