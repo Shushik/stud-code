@@ -144,7 +144,7 @@ describe('useRef', () => {
     expect(listener3).toHaveBeenCalledWith(OBJECT_VALUE, OBJECT_VALUE)
   })
 
-  it('Should remove oncahge subscription', () => {
+  it('Should remove onchange subscription', () => {
     const obj = useReactive<IValue>(OBJECT_VALUE)
     const listener1 = vi.fn((_newVal, _oldVal) => { })
     const listener2 = vi.fn(() => obj.value[OBJECT_CHANGE_KEY] + '1')
