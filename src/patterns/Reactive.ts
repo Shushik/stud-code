@@ -44,9 +44,9 @@ interface ITarget<TValue = unknown> {
 /**
  * Active effect listener object
  *
- * @var {Object} effectCan
+ * @var {Object} effectorCan
  */
-let effectCan: IListener | null = null
+let effectorCan: IListener | null = null
 
 /**
  * Active computed listener object
@@ -83,7 +83,7 @@ function getObserverKey(): string {
  */
 function defineListener(observers: TObservers, observerKey: string) {
   let listeners: TListeners | undefined = observers.get(observerKey)
-  const effector = effectCan ? effectCan.effector : null
+  const effector = effectorCan ? effectorCan.effector : null
   const computer = computedCan ? computedCan.computer : null
 
   // Create list of listeners for given key
@@ -102,7 +102,7 @@ function defineListener(observers: TObservers, observerKey: string) {
   if (effector) {
     listeners.add(effector)
 
-    effectCan!.stopper = () => declineListener(observers, observerKey, effector)
+    effectorCan!.stopper = () => declineListener(observers, observerKey, effector)
   }
 }
 
@@ -220,7 +220,7 @@ function wrapObject<TValue = unknown>(
 
       // If activeEffect or activeComputed listener is set,
       // it should be added to observers list
-      if (computedCan || (effectCan && val === effectCan.target)) {
+      if (computedCan || (effectorCan && val === effectorCan.target)) {
         defineListener(observers, `${observerKey}.${key as string}`)
       }
 
@@ -292,27 +292,33 @@ function useRef<TValue extends TPrimitives>(rawValue: TValue): IRefTarget<TValue
  * @param {Function} rawGetter
  * @param {Function} rawEffect
  * @returns {Function}
+ * @throws {Error} Error: useWatch(): no stopper() available
  */
 function useWatch<TValue = unknown>(
   rawGetter: TGetter<TValue>,
   rawEffect: TListener
 ): TStopper {
-// ): TWatcher<TValue> {
+  // Get target object
   const target = rawGetter()
+  // Get effect listener
   const effector = rawEffect
 
   // Set current target and listener object from where
   // listener will be taken for the further subscription
-  effectCan = { target, effector }
+  effectorCan = { target, effector }
   // Trigger value getter to run listener subscribe process
   rawGetter()
   // Get stopper function
-  const { stopper } = effectCan
+  const { stopper } = effectorCan
   // Reset current target and listener object
-  effectCan = null
+  effectorCan = null
+
+  if (!stopper) {
+    throw new Error('useWatch: no stopper() available')
+  }
 
   // Return a stopper function
-  return stopper!
+  return stopper
 }
 
 /**
@@ -321,6 +327,9 @@ function useWatch<TValue = unknown>(
  * @function useComputed
  * @param {Function} rawGetter
  * @returns {Object}
+ * @object
+ *   @readonly
+ *   @property {undefined|null|boolean|number|bigint|string|symbol|Object} value
  */
 function useComputed<TValue = unknown>(rawGetter: TGetter<TValue>): IComputedTarget<TValue> {
   // Observer key for computed listeners
@@ -358,10 +367,11 @@ function useComputed<TValue = unknown>(rawGetter: TGetter<TValue>): IComputedTar
     get value() {
       // If some activeEffect is set, it should be added
       // to observers list
-      if (effectCan) {
+      if (effectorCan) {
         defineListener(observers, observerKey)
       }
 
+      // Return new value
       return newValue
     }
   }
