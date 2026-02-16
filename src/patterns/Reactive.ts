@@ -9,17 +9,20 @@
  */
 type TGetter<TValue = unknown> = () => TValue
 type TProxied = WeakSet<WeakKey>
+type TWatcher<TValue = unknown> = () => IListener<TValue>
 type TListener = ((...args: unknown[]) => void) | null
 type TListeners = Set<TListener | undefined>
 type TObservers = Map<string, TListeners | undefined>
 type TPrimitives = undefined | null | boolean | number | bigint | string | symbol
 
 interface IListener<TValue = unknown> {
+  observerKey?: string
+  observers?: TObservers
   target: TValue
   listener: TListener
 }
 
-interface IComputed<TValue = unknown> {
+interface IComputed {
   listener: TListener
 }
 
@@ -99,7 +102,20 @@ function defineListener(observers: TObservers, observerKey: string) {
   // Set effect listener
   if (effectListener) {
     listeners.add(effectListener)
+
+    activeEffect!.observers = observers
+    activeEffect!.observerKey = observerKey
   }
+}
+
+function declineListener(observers: TObservers, observerKey: string, rawListener: TListener) {
+  const listeners = observers.get(observerKey)
+
+  if (!listeners) {
+    return
+  }
+
+  listeners.delete(rawListener)
 }
 
 /**
@@ -196,7 +212,7 @@ function proxifyObject<TValue = unknown>(
         Reflect.set(obj, key, val, rec)
       }
 
-      // If some activeEffect or activeComputed listener is set,
+      // If activeEffect or activeComputed listener is set,
       // it should be added to observers list
       if (activeComputed || (activeEffect && val === activeEffect.target)) {
         defineListener(observers, `${observerKey}.${key as string}`)
@@ -269,18 +285,46 @@ function useRef<TValue extends TPrimitives>(rawValue: TValue): IRefTarget<TValue
  * @function useWatch
  * @param {Function} rawGetter
  * @param {Function} rawEffect
+ * @returns {Function}
  */
-function useWatch<TValue = unknown>(rawGetter: TGetter<TValue>, rawEffect: TListener) {
+function useWatch<TValue = unknown>(
+  rawGetter: TGetter<TValue>,
+  rawEffect: TListener
+): TWatcher<TValue> {
   const target = rawGetter()
   const listener = rawEffect
+  const effect = { target, listener }
 
   // Set current target and listener object from where
   // listener will be taken for the further subscription
-  activeEffect = { target, listener }
+  activeEffect = effect
   // Trigger value getter to run listener subscribe process
   rawGetter()
   // Reset current target and listener object
   activeEffect = null
+
+  // Return a getter returns watcher object for further
+  // usage in useUnwatch() function
+  return () => effect
+}
+
+/**
+ * Unwatchability for reactivity
+ *
+ * @function useUnwatch
+ * @param {Function} rawWatcher getter returned from useWatch()
+ */
+function useUnwatch<TValue = unknown>(rawWatcher: TWatcher<TValue>) {
+  // Get watcher object
+  const watcher = rawWatcher()
+
+  // No need to go further
+  if (!watcher.observers || !watcher.observerKey) {
+    return
+  }
+
+  // Remove listener
+  declineListener(watcher.observers, watcher.observerKey, watcher.listener)
 }
 
 /**
@@ -363,4 +407,4 @@ function useReactive<TValue = unknown>(rawValue: TValue): IRootTarget<TValue> {
   ) as IRootTarget<TValue>
 }
 
-export { useRef, useWatch, useComputed, useReactive }
+export { useRef, useWatch, useUnwatch, useComputed, useReactive }

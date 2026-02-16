@@ -1,5 +1,11 @@
 import { vi } from 'vitest'
-import {useComputed, useReactive, useRef, useWatch} from '@/patterns/Reactive'
+import {
+  useRef,
+  useWatch,
+  useUnwatch,
+  useComputed,
+  useReactive
+} from '@/patterns/Reactive'
 
 interface IValue {
   a: string,
@@ -137,6 +143,24 @@ describe('useRef', () => {
     expect(listener2).toHaveBeenCalledWith(PRIMITIVE_VALUE, OBJECT_CHANGE_KEY)
     expect(listener3).toHaveBeenCalledTimes(5)
     expect(listener3).toHaveBeenCalledWith(OBJECT_VALUE, OBJECT_VALUE)
+  })
+
+  it('Should remove oncahge subscription', () => {
+    const obj = useReactive<IValue>(OBJECT_VALUE)
+    const listener1 = vi.fn((_newVal, _oldVal) => { })
+    const listener2 = vi.fn(() => obj.value[OBJECT_CHANGE_KEY] + '1')
+    const watcher = useWatch(() => obj.value[OBJECT_CHANGE_KEY], listener1)
+
+    useComputed(listener2)
+    useUnwatch(watcher)
+
+    obj.value[OBJECT_CHANGE_KEY] = PRIMITIVE_VALUE
+    obj.value[OBJECT_CHANGE_KEY] = PRIMITIVE_VALUE + PRIMITIVE_VALUE
+
+    // One listener from useWatch should be removed,
+    // And another one from useComputed should stay
+    expect(listener1).not.toHaveBeenCalled()
+    expect(listener2).toHaveBeenCalledTimes(2)
   })
 
 })
